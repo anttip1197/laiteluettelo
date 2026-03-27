@@ -97,6 +97,7 @@ def _interactive_review(unit) -> bool:
 def run_extraction(
     pdf_path: str,
     model: str | None = None,
+    use_finetuned: bool = False,
     output: str | None = None,
     tallenna_esimerkki: bool = False,
     tarkista: bool = False,
@@ -119,9 +120,13 @@ def run_extraction(
         expand=False,
     ))
 
-    # 1. Tarkista Ollama
-    if not check_ollama_running():
-        console.print(Panel(
+    # 1. Tarkista malli
+    if use_finetuned:
+        console.print("  [cyan]Malli: fine-tuned (paikallinen)[/cyan]")
+    else:
+        # Tarkista Ollama
+        if not check_ollama_running():
+            console.print(Panel(
             "[red bold]Ollama ei ole käynnissä![/red bold]\n\n"
             "  1. Asenna:    [link=https://ollama.com]https://ollama.com[/link]\n"
             "  2. Lataa malli: [yellow]ollama pull mistral[/yellow]\n"
@@ -130,14 +135,22 @@ def run_extraction(
         ))
         sys.exit(1)
 
-    available = list_available_models()
-    if not available:
-        console.print("[red]Ei malleja![/red] Lataa: [yellow]ollama pull mistral[/yellow]")
-        sys.exit(1)
+    if not use_finetuned:
+        available = list_available_models()
+        if not available:
+            console.print("[red]Ei malleja![/red] Lataa: [yellow]ollama pull mistral[/yellow]")
+            sys.exit(1)
 
-    chosen_model = model or select_best_model()
-    console.print(f"  Malli: [bold]{chosen_model}[/bold]  "
-                  f"Saatavilla: {', '.join(available)}")
+        chosen_model = model or select_best_model()
+        console.print(f"  Malli: [bold]{chosen_model}[/bold]  "
+                      f"Saatavilla: {', '.join(available)}")
+    else:
+        # Check fine-tuned model exists
+        finetuned_path = Path(__file__).parent / "training" / "model_output" / "laiteluettelo_merged"
+        if not finetuned_path.exists():
+            console.print(f"[red]Fine-tuned malli ei löydy: {finetuned_path}[/red]")
+            sys.exit(1)
+        chosen_model = "finetuned"
 
     # 2. Lue PDF
     console.print("\n[dim]Luetaan PDF...[/dim]")
@@ -157,12 +170,22 @@ def run_extraction(
 
     # 3. LLM-purku
     try:
-        unit = extract_from_pdf_text(
-            pdf_text,
-            unit_code=unit_code,
-            model=chosen_model,
-            source_pdf=str(pdf_path),
-        )
+        if use_finetuned:
+            from src.inference_finetuned import extract_with_finetuned
+            from src.llm_extractor import build_extracted_unit
+
+            console.print("[cyan]Käytetään fine-tuned-mallia (ei Ollama)[/cyan]")
+            raw_json = extract_with_finetuned(pdf_text)
+            if not raw_json:
+                raise ValueError("Fine-tuned malli ei palauttanut kelvollista JSON:ia")
+            unit = build_extracted_unit(raw_json, source_pdf=str(pdf_path))
+        else:
+            unit = extract_from_pdf_text(
+                pdf_text,
+                unit_code=unit_code,
+                model=chosen_model,
+                source_pdf=str(pdf_path),
+            )
     except RuntimeError as e:
         console.print(f"[red]{e}[/red]")
         sys.exit(1)
@@ -222,11 +245,12 @@ def cli():
 @cli.command("purku")
 @click.argument("pdf_path", type=click.Path(exists=True))
 @click.option("--model", "-m", default=None, help="Ollama-malli (esim. mistral, phi3.5)")
+@click.option("--use-finetuned", is_flag=True, help="Käytä fine-tuned-mallia (ei Ollama)")
 @click.option("--output", "-o", default=None, help="Tallennushakemisto tai .xlsx-polku")
 @click.option("--tarkista", is_flag=True, help="Tarkista tulokset ennen tallennusta")
 @click.option("--tallenna-esimerkki", is_flag=True, help="Tallenna training-esimerkiksi")
 @click.option("--ei-avaa", is_flag=True, help="Älä avaa Exceliä automaattisesti")
-def cmd_purku(pdf_path, model, output, tarkista, tallenna_esimerkki, ei_avaa):
+def cmd_purku(pdf_path, model, use_finetuned, output, tarkista, tallenna_esimerkki, ei_avaa):
     """
     Pura koneajokortti ja generoi laiteluettelo-Excel.
 
@@ -239,6 +263,7 @@ def cmd_purku(pdf_path, model, output, tarkista, tallenna_esimerkki, ei_avaa):
     run_extraction(
         pdf_path,
         model=model,
+        use_finetuned=use_finetuned,
         output=output,
         tallenna_esimerkki=tallenna_esimerkki,
         tarkista=tarkista,
