@@ -1,0 +1,137 @@
+{
+  "metadata": {
+    "created": "2025-04-12T12:00:00",
+    "unit_code": "TK01",
+    "project": "Koirasaarentie 24",
+    "manufacturer": "Systemair",
+    "model": "Geniox Go 14",
+    "source_pdf": "Koirasaarentie 24 TK01.pdf",
+    "verified": true,
+    "notes": "Systemair koneajokortti, Geniox Go 14, tarkistettu 12.4.2025"
+  },
+  "input": "Tarjousnumero koirasaarentie 24 (b)\nProjekti Koirasaarentie 24\nKone nro. TK01/Asunnot&Yleiset til.\nKoneen nro.: 10\nPäiväys 12.4.2025\nKuvaus: Geniox Go 14 - Sisäasenteinen IV -kone\nKoneen leveys / Paino: 1682 mm / 2030 kg\nTuloilma Ilma/Puhallin data Ilman tiheys 1.205 kg/m³\nIlmavirta 1.68 m³/s\nPoistoilma Ilma/Puhallin data\nIlmavirta 1.75 m³/s\n\nTuloilmakone sisältää\nPelti\nPainehäviö 2 Pa\nSälepelti Eristetty\nPeltien lukumäärä 1 kpl\nPeltimoottori - On/off jousipalautteinen 1 kpl\nPeltimoottori - Jännitteet 24 V\nPeltimoottori - Vääntö 10 Nm\n\nSuodatin\nMitoituspainehäviö 110 Pa\nAlkupainehäviö/Loppupainehäviö 60/160 Pa\nSuodatinluokka ePM1 60% (F7)\n\nRistivirtalämmönvaihdin\nTuloilma Poistoilma\nIlmamäärä 1.68 1.75 m³/s\nPainehäviö (kuivat olosuhteet) 149 159 Pa\nTALVI\nLämpötila, ennen/jälkeen -29.0/15.3 22.0/-4.5 °C\nLämpötilahyötysuhde 86.9 %\nKuivateho EN 308 mukaisesti 1.68 m³/s 84.5 %\n\nPuhallin (tuloilma)\nIlmamäärä 1.68 m³/s\nKanavistopaine 300 Pa\nSähkönkulutus sis. nopeudensäätimen kulutus 2.27 kW\nVirta, Amp. 5.40 A\nJännite 3x400 V\n\nLämmityspatteri, Neste\nIlmamäärä 1.68 m³/s\nPainehäviö 32 Pa\nIlman lämpötila sisään/ulos -7.5/20.0 °C\nNestelämpötila, meno/paluu 50.0/30.0 °C\nNestemäärä 0.68 l/s\nPainehäviö, neste 9.6 kPa\n\nJäähdytyspatteri\nIlmamäärä 1.68 m³/s\nPainehäviö, märkä patteri 154 Pa\nIlman lämpötila sisään/ulos 27.0/16.0 °C\nNestemäärä 2.45 l/s\nPainehäviö, neste 16.9 kPa\nNestelämpötila, meno/paluu 10.0/15.0 °C\n\nPoistoilmakone sisältää\nÄänenvaimennin\nPainehäviö 64 Pa\n\nSuodatin (poistoilma)\nMitoituspainehäviö 66 Pa\nAlkupainehäviö/Loppupainehäviö 33/99 Pa\nSuodatinluokka ePM10 60 % (M5)\n\nRistivirtalämmönvaihdin (poistoilmapuoli)\nTiedot tuloilmapuolella.\n\nPuhallin (poistoilma)\nIlmamäärä 1.75 m³/s\nKanavistopaine 300 Pa\nSähkönkulutus sis. nopeudensäätimen kulutus 1.70 kW\nVirta, Amp. 5.40 A\nJännite 3x400 V\n\nPelti (poistoilma)\nPainehäviö 3 Pa\nSälepelti Eristetty\nPeltimoottori - On/off jousipalautteinen 1 kpl\nPeltimoottori - Jännitteet 24 V",
+  "output": {
+    "unit_code": "TK01",
+    "project": "Koirasaarentie 24",
+    "manufacturer": "Systemair",
+    "model": "Geniox Go 14",
+    "supply_airflow": 1.68,
+    "exhaust_airflow": 1.75,
+    "components": [
+      {
+        "type": "SP",
+        "side": "supply",
+        "data": {
+          "ilma_dp": 2
+        }
+      },
+      {
+        "type": "FG",
+        "side": "supply",
+        "data": {}
+      },
+      {
+        "type": "SU",
+        "side": "supply",
+        "data": {
+          "ilma_dp_mitoitus": 110,
+          "ilma_dp_alku": 60,
+          "ilma_dp_loppu": 160,
+          "suodatinluokka": "ePM1 60% (F7)"
+        }
+      },
+      {
+        "type": "LTO",
+        "side": "both",
+        "supply_data": {
+          "ilma_dp": 149,
+          "ilma_lampotila_ennen": -29.0,
+          "ilma_lampotila_jalkeen": 15.3
+        },
+        "exhaust_data": {
+          "ilma_dp": 159,
+          "ilma_lampotila_ennen": 22.0,
+          "ilma_lampotila_jalkeen": -4.5
+        },
+        "shared": {
+          "hyotysuhde_en308": 84.5
+        }
+      },
+      {
+        "type": "TF",
+        "side": "supply",
+        "data": {
+          "ilmamaara": 1.68,
+          "mitoituspaine": 300,
+          "sahkoteho": 2.27,
+          "jannite_virta": "3x400V / 5.4A"
+        }
+      },
+      {
+        "type": "LP",
+        "side": "supply",
+        "data": {
+          "nestevirta": 0.68,
+          "neste_dp": 9.6,
+          "ilma_dp": 32,
+          "ilma_lampotila_ennen": -7.5,
+          "ilma_lampotila_jalkeen": 20.0,
+          "neste_meno": 50.0,
+          "neste_paluu": 30.0
+        }
+      },
+      {
+        "type": "JP",
+        "side": "supply",
+        "data": {
+          "nestevirta": 2.45,
+          "neste_dp": 16.9,
+          "ilma_dp": 154,
+          "ilma_lampotila_ennen": 27.0,
+          "ilma_lampotila_jalkeen": 16.0,
+          "neste_meno": 10.0,
+          "neste_paluu": 15.0
+        }
+      },
+      {
+        "type": "AV",
+        "side": "exhaust",
+        "data": {
+          "ilma_dp": 64
+        }
+      },
+      {
+        "type": "SU",
+        "side": "exhaust",
+        "data": {
+          "ilma_dp_mitoitus": 66,
+          "ilma_dp_alku": 33,
+          "ilma_dp_loppu": 99,
+          "suodatinluokka": "ePM10 60% (M5)"
+        }
+      },
+      {
+        "type": "TF",
+        "side": "exhaust",
+        "data": {
+          "ilmamaara": 1.75,
+          "mitoituspaine": 300,
+          "sahkoteho": 1.70,
+          "jannite_virta": "3x400V / 5.4A"
+        }
+      },
+      {
+        "type": "SP",
+        "side": "exhaust",
+        "data": {
+          "ilma_dp": 3
+        }
+      },
+      {
+        "type": "FG",
+        "side": "exhaust",
+        "data": {}
+      }
+    ]
+  }
+}

@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Output - generoituja Excel-tiedostoja ei commitoida
+output/
+
+# Training - isot mallit ja GGUF-tiedostot
+training/model_output/
+training/dataset.jsonl
+*.gguf
+*.bin
+*.safetensors
+
+# Esimerkit - nämä commitoidaan (paitsi mahdolliset arkaluontoiset projektit)
+# Poista kommentti jos ET halua commitoida esimerkkejä:
+# training/examples/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Ympäristömuuttujat
+.env
+*.env

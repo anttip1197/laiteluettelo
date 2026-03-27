@@ -1,0 +1,191 @@
+# Laiteluettelo - Laitetyyppien määritykset
+# Lisää uusi laitetyyppi lisäämällä uusi lohko tähän tiedostoon.
+# code_prefix: tunnuksen etuliite (SP, FG, SU, ...)
+# Muuttujat: name, fields (list), rows (1 tai 2)
+
+equipment_types:
+
+  SP:
+    name: "Sulkupelti"
+    name_en: "Shut-off damper"
+    rows: 1
+    fields:
+      - key: ilma_dp
+        label: "Ilma ΔP (Pa)"
+        unit: "Pa"
+        extract_hint: "painehäviö ilmalle / pressure drop"
+
+  FG:
+    name: "Peltimoottori"
+    name_en: "Damper actuator"
+    rows: 1
+    fields: []  # Ei mitoitustietoja
+
+  SU:
+    name: "Suodatin"
+    name_en: "Air filter"
+    rows: 1
+    fields:
+      - key: ilma_dp_mitoitus
+        label: "Mitoitus ΔP (Pa)"
+        unit: "Pa"
+        extract_hint: "mitoituspainehäviö / design pressure drop"
+      - key: ilma_dp_alku
+        label: "Alku ΔP (Pa)"
+        unit: "Pa"
+        extract_hint: "alkupainehäviö / initial pressure drop"
+      - key: ilma_dp_loppu
+        label: "Loppu ΔP (Pa)"
+        unit: "Pa"
+        extract_hint: "loppupainehäviö / final pressure drop"
+      - key: suodatinluokka
+        label: "Luokka"
+        unit: ""
+        extract_hint: "suodatinluokka / filter class e.g. ePM1 60% F7"
+
+  LTO:
+    name: "Lämmöntalteenotto"
+    name_en: "Heat recovery unit"
+    rows: 2  # KAKSI RIVIÄ: tulopuoli + poistopuoli
+    row_labels: ["Tulopuoli", "Poistopuoli"]
+    fields:
+      - key: ilma_dp
+        label: "Ilma ΔP (Pa)"
+        unit: "Pa"
+        extract_hint: "painehäviö kummallekin puolelle"
+        per_row: true
+      - key: ilma_lampotila_ennen
+        label: "Ilma ennen (°C)"
+        unit: "°C"
+        extract_hint: "ilman lämpötila ennen / air temp before"
+        per_row: true
+      - key: ilma_lampotila_jalkeen
+        label: "Ilma jälkeen (°C)"
+        unit: "°C"
+        extract_hint: "ilman lämpötila jälkeen / air temp after"
+        per_row: true
+      - key: hyotysuhde_en308
+        label: "Hyöts. EN308 (%)"
+        unit: "%"
+        extract_hint: "lämpötilahyötysuhde / thermal efficiency EN308, kuiva/dry"
+        per_row: false  # Sama arvo molemmille riveille (tulopuolelle)
+
+  TF:
+    name: "Puhalltin"
+    name_en: "Fan"
+    rows: 1
+    fields:
+      - key: ilmamaara
+        label: "Ilmamäärä (m³/s)"
+        unit: "m³/s"
+        extract_hint: "ilmamäärä / airflow"
+      - key: mitoituspaine
+        label: "Paine (Pa)"
+        unit: "Pa"
+        extract_hint: "kanavistopaine / duct pressure / external static pressure"
+      - key: sahkoteho
+        label: "Teho (kW)"
+        unit: "kW"
+        extract_hint: "sähkönkulutus / power consumption kW (not nominal motor power)"
+      - key: jannite_virta
+        label: "Jännite/Virta (V/A)"
+        unit: "V/A"
+        extract_hint: "jännite ja nimellisvirta / voltage and current e.g. 3x400V / 5.4A"
+
+  LP:
+    name: "Lämmityspatteri"
+    name_en: "Heating coil (water)"
+    rows: 1
+    fields:
+      - key: nestevirta
+        label: "Nestevirta (l/s)"
+        unit: "l/s"
+        extract_hint: "nestemäärä / water flow rate"
+      - key: neste_dp
+        label: "Neste ΔP (kPa)"
+        unit: "kPa"
+        extract_hint: "painehäviö neste / water pressure drop"
+      - key: ilma_dp
+        label: "Ilma ΔP (Pa)"
+        unit: "Pa"
+        extract_hint: "painehäviö ilma / air pressure drop"
+      - key: ilma_lampotila_ennen
+        label: "Ilma ennen (°C)"
+        unit: "°C"
+        extract_hint: "ilman lämpötila ennen patteria / air temp before coil (winter)"
+      - key: ilma_lampotila_jalkeen
+        label: "Ilma jälkeen (°C)"
+        unit: "°C"
+        extract_hint: "ilman lämpötila jälkeen patteria / air temp after coil (winter)"
+      - key: neste_meno
+        label: "Neste meno (°C)"
+        unit: "°C"
+        extract_hint: "menovesi lämpötila / supply water temperature"
+      - key: neste_paluu
+        label: "Neste paluu (°C)"
+        unit: "°C"
+        extract_hint: "paluuvesi lämpötila / return water temperature"
+
+  JP:
+    name: "Jäähdytyspatteri"
+    name_en: "Cooling coil (water)"
+    rows: 1
+    fields:
+      - key: nestevirta
+        label: "Nestevirta (l/s)"
+        unit: "l/s"
+        extract_hint: "nestemäärä / water flow rate"
+      - key: neste_dp
+        label: "Neste ΔP (kPa)"
+        unit: "kPa"
+        extract_hint: "painehäviö neste / water pressure drop"
+      - key: ilma_dp
+        label: "Ilma ΔP (Pa)"
+        unit: "Pa"
+        extract_hint: "painehäviö märkä patteri / wet coil air pressure drop"
+      - key: ilma_lampotila_ennen
+        label: "Ilma ennen (°C)"
+        unit: "°C"
+        extract_hint: "ilman lämpötila ennen jäähdytyspatteria / air temp in (summer)"
+      - key: ilma_lampotila_jalkeen
+        label: "Ilma jälkeen (°C)"
+        unit: "°C"
+        extract_hint: "ilman lämpötila jälkeen jäähdytyspatteria / air temp out (summer)"
+      - key: neste_meno
+        label: "Neste meno (°C)"
+        unit: "°C"
+        extract_hint: "menovesi / chilled water supply temperature"
+      - key: neste_paluu
+        label: "Neste paluu (°C)"
+        unit: "°C"
+        extract_hint: "paluuvesi / chilled water return temperature"
+
+  AV:
+    name: "Äänenvaimennin"
+    name_en: "Silencer"
+    rows: 1
+    fields:
+      - key: ilma_dp
+        label: "Ilma ΔP (Pa)"
+        unit: "Pa"
+        extract_hint: "painehäviö / pressure drop"
+
+# Oletuskoodaus: automaattinen numerointi
+# Muokkaa tätä jos projektissa on eri nimeämiskäytäntö
+default_code_scheme:
+  supply:
+    SP: "SP01"
+    FG: "FG01"
+    SU: "SU01"
+    LTO: "LTO10"
+    TF: "TF10"
+    LP: "LP10"
+    JP: "JP10"
+    AV: "AV01"
+  exhaust:
+    AV: "AV30"
+    SU: "SU30"
+    LTO: "LTO10"   # Sama laite kuin tulopuolella
+    TF: "TF30"
+    SP: "SP30"
+    FG: "FG30"
