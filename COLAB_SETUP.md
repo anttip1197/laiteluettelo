@@ -191,15 +191,34 @@ mv laiteluettelo_merged c:\Users\anttipar\laiteluettelo\training\model_output\
 ```
 
 ### 3. Create Modelfile for Ollama:
-```bash
-cat > c:\Users\anttipar\laiteluettelo\training\Modelfile << 'EOF'
+
+**Option A - Windows (PowerShell):**
+```powershell
+cd c:\Users\anttipar\laiteluettelo\training\model_output
+@"
 FROM laiteluettelo_merged
 SYSTEM "You are an expert HVAC engineering assistant. Extract structured technical data and return ONLY valid JSON."
-EOF
+"@ | Out-File -Encoding utf8 Modelfile
+```
+
+**Option B - Windows (Bash/MINGW):**
+```bash
+cd c:/Users/anttipar/laiteluettelo/training/model_output
+echo FROM laiteluettelo_merged > Modelfile
+echo 'SYSTEM "You are an expert HVAC engineering assistant. Extract structured technical data and return ONLY valid JSON."' >> Modelfile
+```
+
+**Option C - Manual:**
+1. Create file `c:\Users\anttipar\laiteluettelo\training\model_output\Modelfile` (no extension)
+2. Add these 2 lines:
+```
+FROM laiteluettelo_merged
+SYSTEM "You are an expert HVAC engineering assistant. Extract structured technical data and return ONLY valid JSON."
 ```
 
 ### 4. Import to Ollama:
 ```bash
+cd c:\Users\anttipar\laiteluettelo\training\model_output
 ollama create laiteluettelo-custom -f Modelfile
 ```
 
