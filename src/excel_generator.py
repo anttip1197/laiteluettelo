@@ -36,6 +36,9 @@ COLORS = {
     "LP": "FFE6E6",   # Pinkki – lämmityspatteri
     "JP": "D9F2FF",   # Syaani – jäähdytyspatteri
     "AV": "EAD1DC",   # Roosa – äänenvaimennin
+    "HPE": "E8D4F8",  # Vaaleanvioletti – esilämmityspatteri
+    "HPO": "D5E8F7",  # Vaaleansininen – jälkilämmityspatteri
+    "SOUND": "F0E8D8", # Vaalea beige – äänitiedot
     "default": "FFFFFF",
 }
 
@@ -94,18 +97,25 @@ FIELD_MAP: dict[int, list[tuple[str, str]]] = {
     3:  [("TF", "ilmamaara")],
     4:  [("SP", "ilma_dp"), ("SU", "ilma_dp_mitoitus"), ("TF", "mitoituspaine"),
          ("LP", "ilma_dp"), ("JP", "ilma_dp"), ("AV", "ilma_dp"),
+         ("HPE", "ilma_dp"), ("HPO", "ilma_dp"),
          ("LTO_supply", "ilma_dp"), ("LTO_exhaust", "ilma_dp")],
     5:  [("SU", "ilma_dp_alku")],
     6:  [("SU", "ilma_dp_loppu")],
     7:  [("SU", "suodatinluokka")],
     8:  [("LP", "ilma_lampotila_ennen"), ("JP", "ilma_lampotila_ennen"),
+         ("HPE", "ilma_lampotila_ennen"), ("HPO", "ilma_lampotila_ennen"),
          ("LTO_supply", "ilma_lampotila_ennen"), ("LTO_exhaust", "ilma_lampotila_ennen")],
     9:  [("LP", "ilma_lampotila_jalkeen"), ("JP", "ilma_lampotila_jalkeen"),
+         ("HPE", "ilma_lampotila_jalkeen"), ("HPO", "ilma_lampotila_jalkeen"),
          ("LTO_supply", "ilma_lampotila_jalkeen"), ("LTO_exhaust", "ilma_lampotila_jalkeen")],
-    10: [("LP", "nestevirta"), ("JP", "nestevirta")],
-    11: [("LP", "neste_dp"), ("JP", "neste_dp")],
-    12: [("LP", "neste_meno"), ("JP", "neste_meno")],
-    13: [("LP", "neste_paluu"), ("JP", "neste_paluu")],
+    10: [("LP", "nestevirta"), ("JP", "nestevirta"),
+         ("HPE", "nestevirta"), ("HPO", "nestevirta")],
+    11: [("LP", "neste_dp"), ("JP", "neste_dp"),
+         ("HPE", "neste_dp"), ("HPO", "neste_dp")],
+    12: [("LP", "neste_meno"), ("JP", "neste_meno"),
+         ("HPE", "neste_meno"), ("HPO", "neste_meno")],
+    13: [("LP", "neste_paluu"), ("JP", "neste_paluu"),
+         ("HPE", "neste_paluu"), ("HPO", "neste_paluu")],
     14: [("TF", "sahkoteho")],
     15: [("TF", "jannite_virta")],
     16: [("LTO_supply", "hyotysuhde_en308")],
@@ -132,6 +142,43 @@ def _get_cell_value(data: dict, type_key: str, col_idx: int) -> Any:
                 return round(val, 2)
             return val
     return None
+
+
+def _format_additional_data(data: dict, type_key: str) -> str:
+    """
+    Muodosta lisätiedot (kosteus, äänitiedot) HUOMIOT-sarakkeelle.
+    Sisältää tiedot jotka eivät mahdu muihin sarakkeisiin.
+    """
+    notes = []
+
+    # Kosteus (HPE, HPO, LTO, LP, JP)
+    if "ilma_kosteus_ennen" in data and data["ilma_kosteus_ennen"] is not None:
+        before = data["ilma_kosteus_ennen"]
+        after = data.get("ilma_kosteus_jalkeen")
+        if after is not None:
+            notes.append(f"Kosteus: {before}% → {after}%")
+        else:
+            notes.append(f"Kosteus ennen: {before}%")
+    elif "ilma_kosteus_jalkeen" in data and data["ilma_kosteus_jalkeen"] is not None:
+        notes.append(f"Kosteus jälkeen: {data['ilma_kosteus_jalkeen']}%")
+
+    # Äänitiedot (SOUND)
+    if "aani_data_json" in data and data["aani_data_json"]:
+        try:
+            audio_data = data["aani_data_json"]
+            if isinstance(audio_data, dict):
+                locations = list(audio_data.keys())
+                notes.append(f"Äänitiedot ({len(locations)} mittauspistettä)")
+                # Näytä kokonais dB-A arvot
+                for loc in sorted(locations)[:3]:  # Näytä max 3 mittauspistettä
+                    if isinstance(audio_data[loc], dict) and "kokonais_dB_A" in audio_data[loc]:
+                        db_a = audio_data[loc]["kokonais_dB_A"]
+                        loc_pretty = loc.replace("_", " ")
+                        notes.append(f"  {loc_pretty}: {db_a} dB(A)")
+        except (TypeError, KeyError):
+            notes.append("Äänitiedot saatavilla")
+
+    return "\n".join(notes)
 
 
 def _write_row(
@@ -171,14 +218,19 @@ def _write_row(
 
     # Sarakkeet 4–17: tekniset tiedot
     for col_idx in range(3, len(COLUMNS)):
-        val = _get_cell_value(data, type_key, col_idx)
+        # HUOMIOT-sarake (viimeinen) saa lisätiedot (kosteus, äänitiedot)
+        if col_idx == len(COLUMNS) - 1:
+            val = _format_additional_data(data, type_key)
+        else:
+            val = _get_cell_value(data, type_key, col_idx)
+
         c = ws.cell(row=row, column=col_idx + 1, value=val)
         c.fill = fill
         c.font = _font(size=10)
-        c.alignment = _align("center")
+        c.alignment = _align("left" if col_idx == len(COLUMNS) - 1 else "center", wrap=True)
         c.border = INNER_BORDER
         # Tyhjä solu haalean harmaana
-        if val is None:
+        if not val:
             c.fill = _fill("F7F7F7")
 
 
@@ -193,7 +245,9 @@ def generate_excel(
     config = load_equipment_config()
     wb = Workbook()
     ws = wb.active
-    ws.title = unit.unit_code
+    # Sanitize sheet title (Excel doesn't allow: ? * [ ] / \)
+    sanitized_code = unit.unit_code.replace("?", "").replace("*", "").replace("[", "").replace("]", "").replace("/", "").replace("\\", "") or "TK"
+    ws.title = sanitized_code[:31]  # Excel sheet name max 31 chars
 
     # Lukitse ylimmät rivit jäätymistä varten
     ws.freeze_panes = "A4"
@@ -258,7 +312,9 @@ def generate_excel(
     if output_path is None:
         output_dir = Path(__file__).parent.parent / "output"
         output_dir.mkdir(exist_ok=True)
-        output_path = output_dir / f"laiteluettelo_{unit.unit_code}.xlsx"
+        # Sanitize filename (remove invalid chars: ? * [ ] / \ : ; < > |)
+        safe_code = unit.unit_code.replace("?", "").replace("*", "").replace("[", "").replace("]", "").replace("/", "").replace("\\", "").replace(":", "").replace(";", "").replace("<", "").replace(">", "").replace("|", "") or "TK"
+        output_path = output_dir / f"laiteluettelo_{safe_code}.xlsx"
 
     output_path = Path(output_path)
     wb.save(output_path)

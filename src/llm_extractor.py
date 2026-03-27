@@ -31,7 +31,39 @@ DEFAULT_MODEL = "mistral"  # tai "phi3.5", "llama3.2"
 SYSTEM_PROMPT = """You are an expert HVAC engineering assistant specializing in Finnish ventilation systems (ilmanvaihto).
 Your task: extract structured technical data from ventilation unit specification sheets (koneajokortti).
 
-IMPORTANT: Return ONLY valid JSON. No explanations, no markdown, no code blocks. Pure JSON only.
+IMPORTANT RULES:
+1. Return ONLY valid JSON. No explanations, no markdown, no code blocks. Pure JSON only.
+2. EVERY component MUST have a "type" field with ONE of these EXACTLY: SP, FG, SU, LTO, TF, LP, JP, AV, HPE, HPO, SOUND
+3. If you cannot identify the component type, OMIT it — do not invent new types
+4. Extract numerical values only (no units in the number)
+
+COMPONENT NAME MAPPING — when you see these names, recognize them and assign the correct type code:
+
+FINNISH NAMES:
+- "puhallin", "puhallain", "keskipakopuhallin", "moottori" → TF
+- "suodatin", "ilmasuodatin", "EPM", "ePM", "G4", "F7", "F9" → SU
+- "äänenvaimennin", "äänenvaimentaja", "hiljennin", "silencer" → AV
+- "sulkupelti", "säätöpelti", "ohjauspelti", "termostaattipelti" → SP
+- "peltimoottori", "peltiin kiinnitettävä moottori" → FG
+- "lämmöntalteenotto", "LTO", "kiertoainekierto", "läpöpatti" → LTO
+- "lämmityspatteri", "vesipatteri", "lämmityksen pattteri", "talvipatteri" → LP [winter context] or HPE/HPO
+- "jäähdytyspatteri", "jäähdytyksen pattteri", "kesäpatteri" → JP
+- "esilämmityspatteri", "esipattteri", "esilämmitys" → HPE
+- "jälkilämmityspatteri", "jälkipattteri", "jälkilämmitys" → HPO
+- "äänitiedot", "äänipaine", "akustinen", "dB", "taajuus" → SOUND
+
+ENGLISH NAMES:
+- "fan", "centrifugal fan", "ventilation fan", "motor" → TF
+- "filter", "EPM", "ePM", "G4", "F7", "F9" → SU
+- "silencer", "acoustic silencer", "sound attenuator" → AV
+- "damper", "shut-off damper", "butterfly damper", "control valve" → SP
+- "actuator", "motor damper", "actuated damper" → FG
+- "heat recovery", "HRU", "rotary heat exchanger", "plate heat exchanger" → LTO
+- "coil", "heating coil", "water heater", "heater" → LP/HPE/HPO
+- "cooling coil", "chiller coil", "chilled water coil" → JP
+- "pre-heater", "pre-heating" → HPE
+- "post-heater", "post-heating" → HPO
+- "acoustic", "frequency", "dB", "sound pressure level", "noise" → SOUND
 
 Component types and what to extract:
 
@@ -53,10 +85,14 @@ LTO (lämmöntalteenotto / heat recovery):
     - ilma_dp: supply air pressure drop Pa
     - ilma_lampotila_ennen: supply air temperature before LTO (°C, winter condition)
     - ilma_lampotila_jalkeen: supply air temperature after LTO (°C, winter condition)
+    - ilma_kosteus_ennen: supply air relative humidity before LTO (%)
+    - ilma_kosteus_jalkeen: supply air relative humidity after LTO (%)
   exhaust_data:
     - ilma_dp: exhaust air pressure drop Pa
     - ilma_lampotila_ennen: exhaust air temperature before LTO (°C, winter condition)
     - ilma_lampotila_jalkeen: exhaust air temperature after LTO (°C, winter condition)
+    - ilma_kosteus_ennen: exhaust air relative humidity before LTO (%)
+    - ilma_kosteus_jalkeen: exhaust air relative humidity after LTO (%)
   shared:
     - hyotysuhde_en308: thermal efficiency % (dry, EN308) — single value for both sides
 
@@ -87,7 +123,35 @@ JP (jäähdytyspatteri / cooling coil):
 AV (äänenvaimennin / silencer):
   - ilma_dp: air pressure drop Pa
 
-Return this exact JSON structure:
+HPE (esilämmityspatteri / pre-heating coil):
+  - nestevirta: water flow l/s
+  - neste_dp: water pressure drop kPa
+  - ilma_dp: air pressure drop Pa
+  - ilma_lampotila_ennen: air temperature before coil °C
+  - ilma_lampotila_jalkeen: air temperature after coil °C
+  - ilma_kosteus_ennen: air relative humidity before coil (%)
+  - ilma_kosteus_jalkeen: air relative humidity after coil (%)
+  - neste_meno: supply water temperature °C
+  - neste_paluu: return water temperature °C
+
+HPO (jälkilämmityspatteri / post-heating coil):
+  - nestevirta: water flow l/s
+  - neste_dp: water pressure drop kPa
+  - ilma_dp: air pressure drop Pa
+  - ilma_lampotila_ennen: air temperature before coil °C
+  - ilma_lampotila_jalkeen: air temperature after coil °C
+  - ilma_kosteus_ennen: air relative humidity before coil (%)
+  - ilma_kosteus_jalkeen: air relative humidity after coil (%)
+  - neste_meno: supply water temperature °C
+  - neste_paluu: return water temperature °C
+
+SOUND (äänitiedot / acoustic data):
+  Extract frequency-band acoustic data from all measurement locations found in koneajo.
+  Common locations: tuloilman ympäristö, ulkoilman ympäristö, poistoilman ympäristö, jäteilman ympäristö
+  Frequency bands: 63, 125, 250, 500, 1000, 2000, 4000, 8000 Hz
+  - aani_data_json: structured JSON with location keys, each containing frequency→dB_A mapping
+
+Return this exact JSON structure (note: type field MUST be one of: SP, FG, SU, LTO, TF, LP, JP, AV, HPE, HPO, SOUND):
 {
   "unit_code": "TK01",
   "project": "project name or null",
@@ -141,6 +205,51 @@ Return this exact JSON structure:
         "mitoituspaine": 300,
         "sahkoteho": 2.27,
         "jannite_virta": "3x400V / 5.4A"
+      }
+    },
+    {
+      "type": "HPE",
+      "side": "supply",
+      "data": {
+        "nestevirta": 0.15,
+        "neste_dp": 5.2,
+        "ilma_dp": 12,
+        "ilma_lampotila_ennen": -15.0,
+        "ilma_lampotila_jalkeen": 0.0,
+        "ilma_kosteus_ennen": 75,
+        "ilma_kosteus_jalkeen": 65,
+        "neste_meno": 30,
+        "neste_paluu": 25
+      }
+    },
+    {
+      "type": "SOUND",
+      "side": "both",
+      "data": {
+        "aani_data_json": {
+          "tuloilman_ymparistö": {
+            "63": 61,
+            "125": 69,
+            "250": 50,
+            "500": 42,
+            "1000": 38,
+            "2000": 35,
+            "4000": 33,
+            "8000": 29,
+            "kokonais_dB_A": 54
+          },
+          "poistoilman_ymparistö": {
+            "63": 62,
+            "125": 70,
+            "250": 52,
+            "500": 44,
+            "1000": 40,
+            "2000": 37,
+            "4000": 35,
+            "8000": 31,
+            "kokonais_dB_A": 56
+          }
+        }
       }
     }
   ]

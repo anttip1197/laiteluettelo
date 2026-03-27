@@ -64,6 +64,16 @@ equipment_types:
         unit: "°C"
         extract_hint: "ilman lämpötila jälkeen / air temp after"
         per_row: true
+      - key: ilma_kosteus_ennen
+        label: "Kosteus ennen (%)"
+        unit: "%"
+        extract_hint: "suhteellinen kosteus ennen / relative humidity before"
+        per_row: true
+      - key: ilma_kosteus_jalkeen
+        label: "Kosteus jälkeen (%)"
+        unit: "%"
+        extract_hint: "suhteellinen kosteus jälkeen / relative humidity after"
+        per_row: true
       - key: hyotysuhde_en308
         label: "Hyöts. EN308 (%)"
         unit: "%"
@@ -170,6 +180,89 @@ equipment_types:
         unit: "Pa"
         extract_hint: "painehäviö / pressure drop"
 
+  HPE:
+    name: "Esilämmityspatteri"
+    name_en: "Pre-heating coil"
+    rows: 1
+    fields:
+      - key: nestevirta
+        label: "Nestevirta (l/s)"
+        unit: "l/s"
+        extract_hint: "nestemäärä / water flow rate"
+      - key: neste_dp
+        label: "Neste ΔP (kPa)"
+        unit: "kPa"
+        extract_hint: "painehäviö neste / water pressure drop"
+      - key: ilma_dp
+        label: "Ilma ΔP (Pa)"
+        unit: "Pa"
+        extract_hint: "painehäviö ilma / air pressure drop"
+      - key: ilma_lampotila_ennen
+        label: "Ilma ennen (°C)"
+        unit: "°C"
+        extract_hint: "ilman lämpötila ennen esilämmitystä"
+      - key: ilma_lampotila_jalkeen
+        label: "Ilma jälkeen (°C)"
+        unit: "°C"
+        extract_hint: "ilman lämpötila jälkeen esilämmitystä"
+      - key: neste_meno
+        label: "Neste meno (°C)"
+        unit: "°C"
+      - key: neste_paluu
+        label: "Neste paluu (°C)"
+        unit: "°C"
+      - key: ilma_kosteus_ennen
+        label: "Ilma kosteus ennen (%)"
+        unit: "%"
+        extract_hint: "suhteellinen kosteus / relative humidity"
+      - key: ilma_kosteus_jalkeen
+        label: "Ilma kosteus jälkeen (%)"
+        unit: "%"
+
+  HPO:
+    name: "Jälkilämmityspatteri"
+    name_en: "Post-heating coil"
+    rows: 1
+    fields:
+      - key: nestevirta
+        label: "Nestevirta (l/s)"
+        unit: "l/s"
+      - key: neste_dp
+        label: "Neste ΔP (kPa)"
+        unit: "kPa"
+      - key: ilma_dp
+        label: "Ilma ΔP (Pa)"
+        unit: "Pa"
+      - key: ilma_lampotila_ennen
+        label: "Ilma ennen (°C)"
+        unit: "°C"
+      - key: ilma_lampotila_jalkeen
+        label: "Ilma jälkeen (°C)"
+        unit: "°C"
+      - key: neste_meno
+        label: "Neste meno (°C)"
+        unit: "°C"
+      - key: neste_paluu
+        label: "Neste paluu (°C)"
+        unit: "°C"
+      - key: ilma_kosteus_ennen
+        label: "Ilma kosteus ennen (%)"
+        unit: "%"
+      - key: ilma_kosteus_jalkeen
+        label: "Ilma kosteus jälkeen (%)"
+        unit: "%"
+
+  SOUND:
+    name: "Äänitiedot"
+    name_en: "Acoustic data"
+    rows: 1
+    fields:
+      - key: aani_data_json
+        label: "Äänitiedot"
+        unit: ""
+        extract_hint: "kaikki äänitaajuustiedot / all acoustic frequency data"
+        note: "Sisältää dB-arvot 63-8000 Hz taajuuskaistoilla"
+
 # Oletuskoodaus: automaattinen numerointi
 # Muokkaa tätä jos projektissa on eri nimeämiskäytäntö
 default_code_scheme:
@@ -182,6 +275,9 @@ default_code_scheme:
     LP: "LP10"
     JP: "JP10"
     AV: "AV01"
+    HPE: "HPE01"
+    HPO: "HPO01"
+    SOUND: "SOUND01"
   exhaust:
     AV: "AV30"
     SU: "SU30"
@@ -189,3 +285,6 @@ default_code_scheme:
     TF: "TF30"
     SP: "SP30"
     FG: "FG30"
+    HPE: "HPE02"
+    HPO: "HPO02"
+    SOUND: "SOUND01"

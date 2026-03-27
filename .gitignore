@@ -11,6 +11,9 @@ build/
 venv/
 env/
 
+# Input - PDF koneajokortit (paikallisesti, ei commitoida)
+koneajo/
+
 # Output - generoituja Excel-tiedostoja ei commitoida
 output/
 
