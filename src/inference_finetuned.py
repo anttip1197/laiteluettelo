@@ -59,25 +59,23 @@ REQUIRED: type field must be one of: SP, FG, SU, LTO, TF, LP, JP, AV, HPE, HPO, 
 
 Return valid JSON only."""
 
-    # Format as chat
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_message},
-    ]
+    # Prepare input text
+    full_prompt = f"{system_prompt}\n\nUser: {user_message}\n\nAssistant:"
 
     # Tokenize
-    inputs = tokenizer.apply_chat_template(
-        messages,
-        tokenize=True,
-        add_generation_prompt=True,
-        return_tensors="pt"
+    inputs = tokenizer(
+        full_prompt,
+        return_tensors="pt",
+        truncation=True,
+        max_length=4096
     ).to(model.device)
 
     # Generate
     print("Generating extraction...")
     with torch.no_grad():
         outputs = model.generate(
-            inputs,
+            input_ids=inputs["input_ids"],
+            attention_mask=inputs["attention_mask"],
             max_new_tokens=2048,
             temperature=0.1,
             top_p=0.9,
